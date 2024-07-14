@@ -250,7 +250,7 @@ impl StableDiffusion {
         };
     
         let scheduler = self.config.build_scheduler(n_steps)?;
-        let use_guide_scale = guidance_scale > 1.0;
+        let use_guide_scale = guidance_scale >= 1.0;
    
 
         let (t_start, init_latent_dist) = match img2img {
