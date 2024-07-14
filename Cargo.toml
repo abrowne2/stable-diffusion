@@ -29,7 +29,7 @@ image = { version = "0.24.7", default-features = false, features = ["jpeg", "png
 imageproc = { version = "0.23.0", default-features = false }
 intel-mkl-src = { version = "0.8.1", features = ["mkl-static-lp64-iomp"] }
 rand = "0.8.5"
-safetensors = "0.6.0"
+safetensors = "0.4.3"
 tokenizers = { version = "0.15.0", default-features = false }
 
 [patch.crates-io]
