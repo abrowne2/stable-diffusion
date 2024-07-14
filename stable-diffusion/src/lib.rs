@@ -272,22 +272,40 @@ impl StableDiffusion {
                 self.dtype
             )?);
         }
-        if matches!(self.version, StableDiffusionVersion::XL) {
+        if matches!(self.version, StableDiffusionVersion::XL | StableDiffusionVersion::Turbo) {
             let style_prompt = style_prompt.unwrap_or_default();
             let uncond_style_prompt = Some(
                 uncond_style_prompt
                 .as_ref().map(|s| s.as_str())
                 .unwrap_or(""));
             let (prompt, uncond_prompt) = self.tokenizer_2.as_ref().unwrap().tokenize_pair(&style_prompt, uncond_style_prompt)?;
-            text_embeddings.push(self.clip_2.as_ref().unwrap().text_embeddings_pair(
+            let emb = self.clip_2.as_ref().unwrap().text_embeddings_pair(
                 prompt,
                 uncond_prompt,
                 &self.device,
                 self.dtype
-            )?);
+            )?;
+            text_embeddings.push(emb);
         }
-
-        let text_embeddings = Tensor::cat(&text_embeddings, D::Minus1)?;
+        
+        // Ensure all embeddings have the same shape
+        let max_seq_len = text_embeddings.iter().map(|t| t.dim(1)?).max().unwrap();
+        let hidden_size = text_embeddings.last().unwrap().dim(2)?;
+        
+        let text_embeddings: Vec<_> = text_embeddings
+            .into_iter()
+            .map(|emb| {
+                let (b, seq, _) = emb.dims3()?;
+                if seq < max_seq_len {
+                    let pad = Tensor::zeros((b, max_seq_len - seq, hidden_size), self.dtype, &self.device)?;
+                    Tensor::cat(&[emb, pad], 1)
+                } else {
+                    Ok(emb)
+                }
+            })
+            .collect::<Result<_>>()?;
+        
+        let text_embeddings = Tensor::cat(&text_embeddings, 0)?; 
         println!("{text_embeddings:?}");
     
         let bsize = 1;
