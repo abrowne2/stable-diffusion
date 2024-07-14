@@ -272,7 +272,7 @@ impl StableDiffusion {
                 self.dtype
             )?);
         }
-        if matches!(self.version, StableDiffusionVersion::XL | StableDiffusionVersion::Turbo) {
+        if matches!(self.version, StableDiffusionVersion::XL) {
             let style_prompt = style_prompt.unwrap_or_default();
             let uncond_style_prompt = Some(
                 uncond_style_prompt
@@ -285,6 +285,10 @@ impl StableDiffusion {
                 &self.device,
                 self.dtype
             )?);
+        }
+
+        if matches!(self.version, StableDiffusionVersion::Turbo) {
+            text_embeddings = text_embeddings.to_dtype(self.dtype)?;
         }
 
         let text_embeddings = Tensor::cat(&text_embeddings, D::Minus1)?;
