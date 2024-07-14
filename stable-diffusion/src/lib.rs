@@ -272,7 +272,7 @@ impl StableDiffusion {
                 self.dtype
             )?);
         }
-        if matches!(self.version, StableDiffusionVersion::XL | StableDiffusionVersion::Turbo) {
+        if matches!(self.version, StableDiffusionVersion::XL) {
             let style_prompt = style_prompt.unwrap_or_default();
             let uncond_style_prompt = Some(
                 uncond_style_prompt
