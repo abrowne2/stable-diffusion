@@ -250,7 +250,7 @@ impl StableDiffusion {
         };
     
         let scheduler = self.config.build_scheduler(n_steps)?;
-        let use_guide_scale = guidance_scale >= 1.0;
+        let use_guide_scale = guidance_scale > 1.0;
    
 
         let (t_start, init_latent_dist) = match img2img {
@@ -265,13 +265,12 @@ impl StableDiffusion {
         let mut text_embeddings = Vec::new();
         {
             let (prompt, uncond_prompt) = self.tokenizer.tokenize_pair(&prompt, uncond_prompt)?;
-            let emb = self.clip.text_embeddings_pair(
+            text_embeddings.push(self.clip.text_embeddings_pair(
                 prompt,
                 uncond_prompt,
                 &self.device,
                 self.dtype
-            )?;
-            text_embeddings.push(emb);
+            )?);
         }
         if matches!(self.version, StableDiffusionVersion::XL | StableDiffusionVersion::Turbo) {
             let style_prompt = style_prompt.unwrap_or_default();
@@ -280,36 +279,15 @@ impl StableDiffusion {
                 .as_ref().map(|s| s.as_str())
                 .unwrap_or(""));
             let (prompt, uncond_prompt) = self.tokenizer_2.as_ref().unwrap().tokenize_pair(&style_prompt, uncond_style_prompt)?;
-            let emb = self.clip_2.as_ref().unwrap().text_embeddings_pair(
+            text_embeddings.push(self.clip_2.as_ref().unwrap().text_embeddings_pair(
                 prompt,
                 uncond_prompt,
                 &self.device,
                 self.dtype
-            )?;
-            text_embeddings.push(emb);
+            )?);
         }
-        
-        // Ensure all embeddings have the same shape
-        let max_seq_len = text_embeddings.iter().map(|t| t.dim(1).unwrap_or(0)).max().unwrap_or(0);
-        let hidden_size = text_embeddings.last().unwrap().dim(2).unwrap_or(0);
-        
-        let text_embeddings: Result<Vec<Tensor>, anyhow::Error> = text_embeddings
-            .into_iter()
-            .map(|emb| {
-                let (b, seq, _) = emb.dims3().map_err(|e| anyhow::anyhow!("{}", e))?;
-                if seq < max_seq_len {
-                    let pad = Tensor::zeros((b, max_seq_len - seq, hidden_size), self.dtype, &self.device)
-                        .map_err(|e| anyhow::anyhow!("{}", e))?;
-                    Tensor::cat(&[emb, pad], 1).map_err(|e| anyhow::anyhow!("{}", e))
-                } else {
-                    Ok(emb)
-                }
-            })
-            .collect();
-        
-        let text_embeddings = text_embeddings?;
-        
-        let text_embeddings = Tensor::cat(&text_embeddings, 0)?;
+
+        let text_embeddings = Tensor::cat(&text_embeddings, D::Minus1)?;
         println!("{text_embeddings:?}");
     
         let bsize = 1;
