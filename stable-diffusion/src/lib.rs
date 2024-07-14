@@ -288,6 +288,7 @@ impl StableDiffusion {
         }
 
         if matches!(self.version, StableDiffusionVersion::Turbo) {
+            println!("updated turbo");
             text_embeddings = text_embeddings.to_dtype(self.dtype)?;
         }
 
