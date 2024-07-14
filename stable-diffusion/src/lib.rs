@@ -288,6 +288,7 @@ impl StableDiffusion {
         }
 
         let text_embeddings = Tensor::cat(&text_embeddings, D::Minus1)?;
+        let text_embeddings = text_embeddings.repeat((1, 1, 1))?;
         println!("{text_embeddings:?}");
     
         let bsize = 1;
