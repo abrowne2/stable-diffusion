@@ -1,5 +1,5 @@
 [workspace.package]
-version = "0.1.9"
+version = "0.1.10"
 description = "Stable Diffusion"
 license = "Apache-2.0"
 documentation = "https://docs.rs/stable-diffusion-trainer"
