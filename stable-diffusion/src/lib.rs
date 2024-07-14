@@ -293,18 +293,20 @@ impl StableDiffusion {
         let max_seq_len = text_embeddings.iter().map(|t| t.dim(1).unwrap_or(0)).max().unwrap_or(0);
         let hidden_size = text_embeddings.last().unwrap().dim(2).unwrap_or(0);
         
-        let text_embeddings: Result<Vec<_>, _> = text_embeddings
+        let text_embeddings: Result<Vec<_>, anyhow::Error> = text_embeddings
             .into_iter()
             .map(|emb| {
-                let (b, seq, _) = emb.dims3()?;
+                let (b, seq, _) = emb.dims3().map_err(|e| anyhow::anyhow!("{}", e))?;
                 if seq < max_seq_len {
-                    let pad = Tensor::zeros((b, max_seq_len - seq, hidden_size), self.dtype, &self.device)?;
-                    Tensor::cat(&[emb, pad], 1)
+                    let pad = Tensor::zeros((b, max_seq_len - seq, hidden_size), self.dtype, &self.device)
+                        .map_err(|e| anyhow::anyhow!("{}", e))?;
+                    Tensor::cat(&[emb, pad], 1).map_err(|e| anyhow::anyhow!("{}", e))
                 } else {
                     Ok(emb)
                 }
             })
             .collect();
+        
         let text_embeddings = text_embeddings?;
         
         let text_embeddings = Tensor::cat(&text_embeddings, 0)?;
