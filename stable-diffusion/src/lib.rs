@@ -288,7 +288,6 @@ impl StableDiffusion {
         }
 
         println!("Text embeddings built: {:?}", text_embeddings);
-
         let text_embeddings = Tensor::cat(&text_embeddings, D::Minus1)?;
         let text_embeddings = text_embeddings.repeat((1, 1, 1))?;
         println!("{text_embeddings:?}");
@@ -333,7 +332,7 @@ impl StableDiffusion {
                 continue;
             }
             let start_time = std::time::Instant::now();
-            let latent_model_input = if use_guide_scale {
+            let latent_model_input = if use_guide_scale && self.version != StableDiffusionVersion::Turbo {
                 Tensor::cat(&[&latents, &latents], 0)?
             } else {
                 latents.clone()
@@ -343,7 +342,7 @@ impl StableDiffusion {
             let noise_pred =
                 self.unet.forward(&latent_model_input, timestep as f64, &text_embeddings)?;
 
-            let noise_pred = if use_guide_scale {
+            let noise_pred = if use_guide_scale && self.version != StableDiffusionVersion::Turbo {
                 let noise_pred = noise_pred.chunk(2, 0)?;
                 let (noise_pred_uncond, noise_pred_text) = (&noise_pred[0], &noise_pred[1]);
 
