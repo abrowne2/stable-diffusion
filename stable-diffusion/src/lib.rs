@@ -261,7 +261,7 @@ impl StableDiffusion {
             }
         };
 
-        let uncond_prompt = if use_guide_scale { Some(uncond_prompt.as_str()) } else { None };
+        let uncond_prompt = None;
         let mut text_embeddings = Vec::new();
         {
             let (prompt, uncond_prompt) = self.tokenizer.tokenize_pair(&prompt, uncond_prompt)?;
@@ -278,7 +278,7 @@ impl StableDiffusion {
                 uncond_style_prompt
                 .as_ref().map(|s| s.as_str())
                 .unwrap_or(""));
-            let (prompt, uncond_prompt) = self.tokenizer_2.as_ref().unwrap().tokenize_pair(&style_prompt, uncond_style_prompt)?;
+            let (prompt, uncond_prompt) = self.tokenizer_2.as_ref().unwrap().tokenize_pair(&style_prompt, None)?;
             text_embeddings.push(self.clip_2.as_ref().unwrap().text_embeddings_pair(
                 prompt,
                 uncond_prompt,
@@ -327,7 +327,6 @@ impl StableDiffusion {
 
         println!("starting sampling");
         for (timestep_index, &timestep) in timesteps.iter().enumerate() {
-            println!("Current timestep index: {}", timestep_index);
             if timestep_index < t_start {
                 continue;
             }
