@@ -278,7 +278,7 @@ impl StableDiffusion {
                 uncond_style_prompt
                 .as_ref().map(|s| s.as_str())
                 .unwrap_or(""));
-            let (prompt, uncond_prompt) = self.tokenizer_2.as_ref().unwrap().tokenize_pair(&style_prompt, None)?;
+            let (prompt, uncond_prompt) = self.tokenizer_2.as_ref().unwrap().tokenize_pair(&prompt, None)?;
             text_embeddings.push(self.clip_2.as_ref().unwrap().text_embeddings_pair(
                 prompt,
                 uncond_prompt,
