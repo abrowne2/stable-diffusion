@@ -287,6 +287,7 @@ impl StableDiffusion {
             )?);
         }
 
+        println!("Text embeddings built: {:?}", text_embeddings);
 
         let text_embeddings = Tensor::cat(&text_embeddings, D::Minus1)?;
         let text_embeddings = text_embeddings.repeat((1, 1, 1))?;
@@ -327,6 +328,7 @@ impl StableDiffusion {
 
         println!("starting sampling");
         for (timestep_index, &timestep) in timesteps.iter().enumerate() {
+            println!("Current timestep index: {}", timestep_index);
             if timestep_index < t_start {
                 continue;
             }
