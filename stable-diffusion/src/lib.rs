@@ -236,7 +236,7 @@ impl StableDiffusion {
                 StableDiffusionVersion::V1_5
                 | StableDiffusionVersion::V2_1
                 | StableDiffusionVersion::XL => 7.5,
-                StableDiffusionVersion::Turbo => 0.,
+                StableDiffusionVersion::Turbo => 0.0,
             },
         };
         let n_steps = match n_steps {
@@ -263,16 +263,16 @@ impl StableDiffusion {
 
         let uncond_prompt = if use_guide_scale { Some(uncond_prompt.as_str()) } else { None };
         let mut text_embeddings = Vec::new();
-        {
-            let (prompt, uncond_prompt) = self.tokenizer.tokenize_pair(&prompt, uncond_prompt)?;
-            text_embeddings.push(self.clip.text_embeddings_pair(
-                prompt,
-                uncond_prompt,
-                &self.device,
-                self.dtype
-            )?);
-        }
-        if matches!(self.version, StableDiffusionVersion::XL) {
+        // {
+        //     let (prompt, uncond_prompt) = self.tokenizer.tokenize_pair(&prompt, uncond_prompt)?;
+        //     text_embeddings.push(self.clip.text_embeddings_pair(
+        //         prompt,
+        //         uncond_prompt,
+        //         &self.device,
+        //         self.dtype
+        //     )?);
+        // }
+        if matches!(self.version, StableDiffusionVersion::Turbo) {
             let style_prompt = style_prompt.unwrap_or_default();
             let uncond_style_prompt = Some(
                 uncond_style_prompt
@@ -285,11 +285,6 @@ impl StableDiffusion {
                 &self.device,
                 self.dtype
             )?);
-        }
-
-        if matches!(self.version, StableDiffusionVersion::Turbo) {
-            println!("updated turbo");
-            text_embeddings = text_embeddings.to_dtype(self.dtype)?;
         }
 
         let text_embeddings = Tensor::cat(&text_embeddings, D::Minus1)?;
