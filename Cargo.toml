@@ -22,7 +22,7 @@ candle-nn = { version = "0.6.0" }
 candle-onnx = { version = "0.6.0" }
 candle-transformers = { version = "0.6.0" }
 clap = { version = "4.2.4", features = ["derive"] }
-cudarc = { version = "0.10.0", features = ["f16"] }
+cudarc = { version = "0.10.0", features = ["f16", "cuda-12020"] }
 hf-hub = "0.3.0"
 half = { version = "2.3.1", features = ["num-traits", "use-intrinsics", "rand_distr"] }
 image = { version = "0.24.7", default-features = false, features = ["jpeg", "png"] }
