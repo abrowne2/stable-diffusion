@@ -261,7 +261,7 @@ impl StableDiffusion {
             }
         };
 
-        let uncond_prompt = None;
+        let uncond_prompt = if use_guide_scale { Some(uncond_prompt.as_str()) } else { None };
         let mut text_embeddings = Vec::new();
         {
             let (prompt, uncond_prompt) = self.tokenizer.tokenize_pair(&prompt, uncond_prompt)?;
@@ -278,7 +278,7 @@ impl StableDiffusion {
                 uncond_style_prompt
                 .as_ref().map(|s| s.as_str())
                 .unwrap_or(""));
-            let (prompt, uncond_prompt) = self.tokenizer_2.as_ref().unwrap().tokenize_pair(&prompt, None)?;
+            let (prompt, uncond_prompt) = self.tokenizer_2.as_ref().unwrap().tokenize_pair(&style_prompt, uncond_style_prompt)?;
             text_embeddings.push(self.clip_2.as_ref().unwrap().text_embeddings_pair(
                 prompt,
                 uncond_prompt,
@@ -287,10 +287,7 @@ impl StableDiffusion {
             )?);
         }
 
-        println!("Text embeddings built: {:?}", text_embeddings);
         let text_embeddings = Tensor::cat(&text_embeddings, D::Minus1)?;
-        let text_embeddings = text_embeddings.repeat((1, 1, 1))?;
-        println!("{text_embeddings:?}");
     
         let bsize = 1;
     
