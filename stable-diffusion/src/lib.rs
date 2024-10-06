@@ -261,7 +261,7 @@ impl StableDiffusion {
             }
         };
 
-        let uncond_prompt = if use_guide_scale { Some(uncond_prompt.as_str()) } else { None };
+        let uncond_prompt = None;
         let mut text_embeddings = Vec::new();
         {
             let (prompt, uncond_prompt) = self.tokenizer.tokenize_pair(&prompt, uncond_prompt)?;
