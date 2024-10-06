@@ -262,13 +262,17 @@ impl StableDiffusion {
         };
 
         let uncond_prompt = Some(
-            "Negative Prompt: out of frame, lowres, text, error, cropped, worst quality, \
-            low quality, jpeg artifacts, ugly, duplicate, morbid, mutilated, out of frame, \
+            "out of frame, lowres, text, error, cropped, worst quality, \
+            low quality, jpeg artifacts, ugly, duplicate, morbid, mutilated, \
             extra fingers, mutated hands, poorly drawn hands, poorly drawn face, mutation, \
             deformed, blurry, bad anatomy, bad proportions, extra limbs, cloned face, \
             disfigured, gross proportions, malformed limbs, missing arms, missing legs, \
             extra arms, extra legs, fused fingers, too many fingers, long neck, username, \
-            watermark, signature."
+            watermark, signature, oversaturated, unrealistic colors, neon, garish, \
+            overexposed, underexposed, pixelated, grainy, noisy, distorted perspective, \
+            unnatural lighting, inconsistent shadows, lens flare, chromatic aberration, \
+            motion blur, fisheye effect, excessive sharpening, color banding, posterization, \
+            uneven skin texture, unnatural skin tone, excessive makeup, cartoon-like features"
         );
         let mut text_embeddings = Vec::new();
         {
