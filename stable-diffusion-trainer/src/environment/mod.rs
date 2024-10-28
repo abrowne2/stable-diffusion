@@ -74,7 +74,7 @@ impl Environment {
         #[cfg(target_os = "windows")]
         let python_executable = self.binary_path().join("python.exe");
         #[cfg(not(target_os = "windows"))]
-        let python_executable = self.binary_path().join("python");
+        let python_executable = self.binary_path().join("python3");
         python_executable
     }
 
