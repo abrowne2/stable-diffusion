@@ -163,6 +163,8 @@ impl Trainer {
     fn caption(&self, parameters: &Parameters, training_dir: &PathBuf) {
         let image_dir = self.subject_dir(parameters, training_dir);
         let python_executable = self.environment.python_executable_path();
+        println!("{}", self.environment.kohya_ss().join("sd-scripts").join("finetune").join("make_captions.py"));
+        
         Command::new(python_executable)
         .arg(self.environment.kohya_ss().join("sd-scripts").join("finetune").join("make_captions.py"))
         .args(["--batch_size", "1"])
