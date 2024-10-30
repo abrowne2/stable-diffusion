@@ -148,6 +148,7 @@ impl Trainer {
         for file in parameters.dataset.training.path().read_dir().unwrap() {
             let file = file.unwrap().path();
             let file_name = file.file_name().unwrap();
+            println!("Copying file: {}", file.display());
             std::fs::copy(&file, image_dir.join(file_name)).unwrap();
         }
 
@@ -164,7 +165,7 @@ impl Trainer {
         let image_dir = self.subject_dir(parameters, training_dir);
         let python_executable = self.environment.python_executable_path();
         println!("{}", self.environment.kohya_ss().join("sd-scripts").join("finetune").join("make_captions.py"));
-        
+
         Command::new(python_executable)
         .arg(self.environment.kohya_ss().join("sd-scripts").join("finetune").join("make_captions.py"))
         .args(["--batch_size", "1"])
