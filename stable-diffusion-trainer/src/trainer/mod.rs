@@ -196,7 +196,7 @@ impl Trainer {
         Command::new("accelerate")
         .arg("launch")
         .arg("--num_cpu_threads_per_process=2")
-        .arg(self.environment.kohya_ss().join("sdxl_train_network.py"))
+        .arg(self.environment.kohya_ss().join("sd-scripts").join("sdxl_train_network.py"))
         .args(["--train_data_dir", &Self::image_dir(training_dir).display().to_string()])
         .args(["--reg_data_dir", &Self::reg_dir(training_dir).display().to_string()])
         .args(["--output_dir", &parameters.output.directory.display().to_string()])
