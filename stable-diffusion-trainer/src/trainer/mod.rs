@@ -164,7 +164,7 @@ impl Trainer {
         let image_dir = self.subject_dir(parameters, training_dir);
         let python_executable = self.environment.python_executable_path();
         Command::new(python_executable)
-        .arg(self.environment.kohya_ss().join("finetune").join("make_captions.py"))
+        .arg(self.environment.kohya_ss().join("sd-scripts").join("finetune").join("make_captions.py"))
         .args(["--batch_size", "1"])
         .args(["--num_beams", "1"])
         .args(["--top_p", "0.9"])
