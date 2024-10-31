@@ -237,8 +237,8 @@ impl Trainer {
             .arg("--bucket_no_upscale")
             .args(["--noise_offset", &self.noise_offset.to_string()])
             .status() {
-                Ok(status) => status,
-                Err(e) => panic!("Failed to execute command: {}", e)
+                Ok(status) => {},
+                Err(e) => println!("Failed to execute command: {}", e)
             }
     }
 }
