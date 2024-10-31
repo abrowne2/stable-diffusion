@@ -238,7 +238,9 @@ impl Trainer {
             .args(["--noise_offset", &self.noise_offset.to_string()])
             .status() {
                 Ok(status) => {},
-                Err(e) => println!("Failed to execute command: {}", e)
+                Err(e) => {
+                    println!("Failed to execute command: {}", e);
+                }
             }
     }
 }
