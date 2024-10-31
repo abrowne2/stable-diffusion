@@ -156,6 +156,7 @@ impl Trainer {
             for file in regularization.path().read_dir().unwrap() {
                 let file = file.unwrap().path();
                 let file_name = file.file_name().unwrap();
+                println!("{}", file.display());
                 std::fs::copy(&file, class_dir.join(file_name)).unwrap();
             }
         }
@@ -164,21 +165,20 @@ impl Trainer {
     fn caption(&self, parameters: &Parameters, training_dir: &PathBuf) {
         let image_dir = self.subject_dir(parameters, training_dir);
         let python_executable = self.environment.python_executable_path();
-        println!("{}", self.environment.kohya_ss().join("sd-scripts").join("finetune").join("make_captions.py"));
-
-        Command::new(python_executable)
-        .arg(self.environment.kohya_ss().join("sd-scripts").join("finetune").join("make_captions.py"))
-        .args(["--batch_size", "1"])
-        .args(["--num_beams", "1"])
-        .args(["--top_p", "0.9"])
-        .args(["--max_length", "75"])
-        .args(["--min_length", "5"])
-        .arg("--beam_search")
-        .args(["--caption_extension", ".txt"])
-        .arg(&image_dir)
-        .args(["--caption_weights", "https://storage.googleapis.com/sfr-vision-language-research/BLIP/models/model_large_caption.pth"])
-        .status()
-        .expect("Failed to execute command");
+        let status = Command::new(python_executable)
+            .arg(self.environment.kohya_ss().join("sd-scripts").join("finetune").join("make_captions.py"))
+            .args(["--batch_size", "1"])
+            .args(["--num_beams", "1"])
+            .args(["--top_p", "0.9"])
+            .args(["--max_length", "75"])
+            .args(["--min_length", "5"])
+            .arg("--beam_search")
+            .args(["--caption_extension", ".txt"])
+            .arg(&image_dir)
+            .args(["--caption_weights", "https://storage.googleapis.com/sfr-vision-language-research/BLIP/models/model_large_caption.pth"])
+            .status()
+            .map_err(|e| format!("Failed to execute caption command: {}", e))
+            .unwrap();
         for txt in image_dir.read_dir().unwrap() {
             let txt = txt.unwrap().path();
             match txt.extension() {
@@ -196,47 +196,49 @@ impl Trainer {
     }
 
     fn train(&self, parameters: &Parameters, training_dir: &PathBuf) {
-        Command::new("accelerate")
-        .arg("launch")
-        .arg("--num_cpu_threads_per_process=2")
-        .arg(self.environment.kohya_ss().join("sd-scripts").join("sdxl_train_network.py"))
-        .args(["--train_data_dir", &Self::image_dir(training_dir).display().to_string()])
-        .args(["--reg_data_dir", &Self::reg_dir(training_dir).display().to_string()])
-        .args(["--output_dir", &parameters.output.directory.display().to_string()])
-        .args(["--output_name", &parameters.output.name])
-        .args(["--pretrained_model_name_or_path", &parameters.training.pretrained_model])
-        .args(["--resolution", &format!("{},{}", self.resolution.0, self.resolution.1)])
-        .args(["--save_model_as", &self.save_model_as.to_string()])
-        .args(["--network_alpha", &parameters.network.alpha.to_string()])
-        .args(["--network_module", &self.network_module])
-        .args(["--network_dim", &parameters.network.dimension.to_string()])
-        .args(["--text_encoder_lr", &self.text_encoder_lr.to_string()])
-        .args(["--unet_lr", &self.unet_lr.to_string()])
-        .args(["--lr_scheduler_num_cycles", &self.lr_scheduler_num_cycles.to_string()])
-        .arg("--no_half_vae")
-        .args(["--learning_rate", &self.learning_rate.to_string()])
-        .args(["--lr_scheduler", &parameters.training.learning_rate.scheduler.to_string()])
-        // .args(["--lr_warmup_steps", &self.lr_warmup_steps.to_string()])
-        .args(["--train_batch_size", &self.train_batch_size.to_string()])
-        // .args(["--max_train_steps", &self.max_train_steps.to_string()])
-        .args(["--save_every_n_epochs", &self.save_every_n_epochs.to_string()])
-        .args(["--mixed_precision", &self.mixed_precision.to_string()])
-        .args(["--save_precision", &self.save_precision.to_string()])
-        .args(["--optimizer_type", &parameters.training.optimizer.to_string()])
-        .args(["--max_grad_norm", &self.max_grad_norm.to_string()])
-        .args(["--max_data_loader_n_workers", &self.max_data_loader_n_workers.to_string()])
-        
-        // Move it to Adafactor
-        // .args(["--optimizer_args", "scale_parameter=False", "relative_step=False", "warmup_init=False"])
-        
-        .arg("--xformers")
-        .arg("--enable_bucket")
-        .args(["--min_bucket_reso", "256"])
-        .args(["--max_bucket_reso", "2048"])
-        .args(["--bucket_reso_steps", &self.bucket_reso_steps.to_string()])
-        .arg("--bucket_no_upscale")
-        .args(["--noise_offset", &self.noise_offset.to_string()])
-        .status()
-        .expect("Failed to execute command");
+        match Command::new("accelerate")
+            .arg("launch")
+            .arg("--num_cpu_threads_per_process=2")
+            .arg(self.environment.kohya_ss().join("sd-scripts").join("sdxl_train_network.py"))
+            .args(["--train_data_dir", &Self::image_dir(training_dir).display().to_string()])
+            .args(["--reg_data_dir", &Self::reg_dir(training_dir).display().to_string()])
+            .args(["--output_dir", &parameters.output.directory.display().to_string()])
+            .args(["--output_name", &parameters.output.name])
+            .args(["--pretrained_model_name_or_path", &parameters.training.pretrained_model])
+            .args(["--resolution", &format!("{},{}", self.resolution.0, self.resolution.1)])
+            .args(["--save_model_as", &self.save_model_as.to_string()])
+            .args(["--network_alpha", &parameters.network.alpha.to_string()])
+            .args(["--network_module", &self.network_module])
+            .args(["--network_dim", &parameters.network.dimension.to_string()])
+            .args(["--text_encoder_lr", &self.text_encoder_lr.to_string()])
+            .args(["--unet_lr", &self.unet_lr.to_string()])
+            .args(["--lr_scheduler_num_cycles", &self.lr_scheduler_num_cycles.to_string()])
+            .arg("--no_half_vae")
+            .args(["--learning_rate", &self.learning_rate.to_string()])
+            .args(["--lr_scheduler", &parameters.training.learning_rate.scheduler.to_string()])
+            // .args(["--lr_warmup_steps", &self.lr_warmup_steps.to_string()])
+            .args(["--train_batch_size", &self.train_batch_size.to_string()])
+            // .args(["--max_train_steps", &self.max_train_steps.to_string()])
+            .args(["--save_every_n_epochs", &self.save_every_n_epochs.to_string()])
+            .args(["--mixed_precision", &self.mixed_precision.to_string()])
+            .args(["--save_precision", &self.save_precision.to_string()])
+            .args(["--optimizer_type", &parameters.training.optimizer.to_string()])
+            .args(["--max_grad_norm", &self.max_grad_norm.to_string()])
+            .args(["--max_data_loader_n_workers", &self.max_data_loader_n_workers.to_string()])
+            
+            // Move it to Adafactor
+            // .args(["--optimizer_args", "scale_parameter=False", "relative_step=False", "warmup_init=False"])
+            
+            .arg("--xformers")
+            .arg("--enable_bucket")
+            .args(["--min_bucket_reso", "256"])
+            .args(["--max_bucket_reso", "2048"])
+            .args(["--bucket_reso_steps", &self.bucket_reso_steps.to_string()])
+            .arg("--bucket_no_upscale")
+            .args(["--noise_offset", &self.noise_offset.to_string()])
+            .status() {
+                Ok(status) => status,
+                Err(e) => panic!("Failed to execute command: {}", e)
+            }
     }
 }
