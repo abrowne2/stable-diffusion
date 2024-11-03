@@ -80,7 +80,7 @@ impl Default for Trainer {
             mixed_precision: FloatPrecision::F16,
             save_precision: FloatPrecision::F16,
             max_grad_norm: 1.0,
-            max_data_loader_n_workers: 0,
+            max_data_loader_n_workers: 1,
             bucket_reso_steps: 64,
             noise_offset: 0.0,
         }
@@ -232,7 +232,7 @@ impl Trainer {
             .arg("--xformers")
             .arg("--enable_bucket")
             .args(["--min_bucket_reso", "256"])
-            .args(["--max_bucket_reso", "2048"])
+            .args(["--max_bucket_reso", "1024"])
             .args(["--bucket_reso_steps", &self.bucket_reso_steps.to_string()])
             .arg("--bucket_no_upscale")
             .args(["--noise_offset", &self.noise_offset.to_string()])
